@@ -12,6 +12,8 @@ Simply enter an upper limit to run.
 #include <vector>
 using namespace std;
 
+#define N 1000000
+
 /*
 Function: long calculate_power_mod1m
 
@@ -21,12 +23,20 @@ Purpose: This function is sent two integers, base and power and calculates an
 Parameters: int base, int power are passed through by the for loop contained in
   the function calculate_pm_sum
 */
-long calculate_power_mod1m(int base, int power) {
-  long result = base;
-  for (int i = 1; i < power; ++i) {
-    result = (result * base) % 1000000;
-  }
-  return result;
+long int calculate_power_mod1m(long int base, long int exp) {
+  if (exp == 0)
+    return 1;
+  if (exp == 1)
+    return base % N;
+
+  long int t = calculate_power_mod1m(base, exp / 2);
+  t = (t * t) % N;
+
+  if (exp % 2 == 0)
+    return t;
+
+  else
+    return ((base % N) * t) % N;
 }
 
 /*

@@ -21,14 +21,20 @@ Purpose: This function is sent two integers, base and power and calculates an
 Parameters: int base, int power are passed through by the for loop contained in
   the function calculate_pm_sum
 */
-long calculate_power_mod1m(int base, int power) {
-  if (power == 1) {
-    return base;
-  } else if (power % 2 == 0) {
-    return calculate_power_mod1m(base, power / 2) % 1000000 * calculate_power_mod1m(base, power / 2) % 1000000;
-  } else {
-    return base * calculate_power_mod1m(base, power / 2) % 1000000 * calculate_power_mod1m(base, power / 2) % 1000000;
-  }
+long int calculate_power_mod1m(long int base, long int exp) {
+  if (exp == 0)
+    return 1;
+  if (exp == 1)
+    return base % N;
+
+  long int t = calculate_power_mod1m(base, exp / 2);
+  t = (t * t) % N;
+
+  if (exp % 2 == 0)
+    return t;
+
+  else
+    return ((base % N) * t) % N;
 }
 
 /*
@@ -44,14 +50,17 @@ Parameters: int lower_range (1), int upper_range(user input) define the range
   for the sum.
 */
 long calculate_pm_sum(int lower_range, int upper_range) {
-
-    long sum = 0;
-    #pragma omp parallel for
-    for (int i = 1; i <= upper_range; ++i) {
-      #pragma omp atomic
-      sum += calculate_power_mod1m(i, i);
-    }
-    return sum % 1000000;
+  long sum = 0;
+  vector<long> v;
+  v.resize(upper_range);
+  #pragma omp parallel for
+  for (int i = 1; i <= upper_range; ++i) {
+    v[i] = (calculate_power_mod1m(i, i));
+  }
+  for (int i = 0; i < v.size(); ++i) {
+    sum += v[i];
+  }
+  return sum % 1000000;
 }
 
 int main() {
