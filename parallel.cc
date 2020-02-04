@@ -22,12 +22,13 @@ Parameters: int base, int power are passed through by the for loop contained in
   the function calculate_pm_sum
 */
 long calculate_power_mod1m(int base, int power) {
-  long result = base;
-  #pragma omp parallel for
-  for (int i = 1; i < power; ++i) {
-    result = (result * base) % 1000000;
+  if (power == 1) {
+    return base;
+  } else if (power % 2 == 0) {
+    return calculate_power_mod1m(base, power / 2) % 1000000 * calculate_power_mod1m(base, power / 2) % 1000000;
+  } else {
+    return base * calculate_power_mod1m(base, power / 2) % 1000000 * calculate_power_mod1m(base, power / 2) % 1000000;
   }
-  return result;
 }
 
 /*
@@ -43,35 +44,17 @@ Parameters: int lower_range (1), int upper_range(user input) define the range
   for the sum.
 */
 long calculate_pm_sum(int lower_range, int upper_range) {
-  long sum1 = 0;
-  long sum2 = 0;
-  long sum3 = 0;
-  long sum4 = 0;
-  #pragma omp parallel sections
-    {
-    #pragma omp section
-      for (int i = lower_range; i <= 33*upper_range/100; ++i) {
-        sum1 += calculate_power_mod1m(i, i);
-      }
-    #pragma omp section
-      for (int i = 33*upper_range/100+1; i <= 60*upper_range/100; ++i) {
-        sum2 += calculate_power_mod1m(i, i);
-      }
-    #pragma omp section
-      for (int i = 60*upper_range/100+1; i <= 82*upper_range/100; ++i) {
-        sum3 += calculate_power_mod1m(i, i);
-      }
-    #pragma omp section
-      for (int i = 82*upper_range/100+1; i <= upper_range; ++i) {
-        sum4 += calculate_power_mod1m(i, i);
-      }
+
+    long sum = 0;
+    #pragma omp parallel for
+    for (int i = 1; i <= upper_range; ++i) {
+      #pragma omp atomic
+      sum += calculate_power_mod1m(i, i);
     }
-    long sum = sum1 + sum2 + sum3 + sum4;
     return sum % 1000000;
 }
 
 int main() {
-  omp_set_num_threads(4);
   int upper_bound;
   cout << "Enter upper bound: ";
   cin >> upper_bound;
