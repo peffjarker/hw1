@@ -12,6 +12,8 @@ an algorithm to calculate the last six decimal digits of a sum from [i,n], i^i
 #include <omp.h>
 using namespace std;
 
+#define N 1000000
+
 /*
 Function: long calculate_power_mod1m
 
@@ -29,7 +31,6 @@ long int calculate_power_mod1m(long int base, long int exp) {
 
   long int t = calculate_power_mod1m(base, exp / 2);
   t = (t * t) % N;
-
   if (exp % 2 == 0)
     return t;
 
@@ -50,17 +51,19 @@ Parameters: int lower_range (1), int upper_range(user input) define the range
   for the sum.
 */
 long calculate_pm_sum(int lower_range, int upper_range) {
-  long sum = 0;
-  vector<long> v;
+  vector <long int> v;
   v.resize(upper_range);
+  long sum = 0;
+
   #pragma omp parallel for
-  for (int i = 1; i <= upper_range; ++i) {
+  for (int i = lower_range; i <= upper_range; ++i) {
     v[i] = (calculate_power_mod1m(i, i));
   }
   for (int i = 0; i < v.size(); ++i) {
     sum += v[i];
   }
   return sum % 1000000;
+
 }
 
 int main() {
